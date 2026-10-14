@@ -16,9 +16,8 @@
     ============================================================================
 --]]
 
--- [CONFIGURATION]
--- Live Render Backend URL (Replace placeholder with your production Render deployment URL)
-local RENDER_BACKEND_URL = "RENDER_URL_HERE"
+-- Live Render Backend URL
+local RENDER_BACKEND_URL = "https://dexcode-yjb2.onrender.com"
 
 -- Shared Cryptographic Secret (Must match SECRET_KEY in render/server.js)
 local SECRET_KEY = "NMC_PATHAN_SECURE_VAULT_KEY_2026_99X!"
