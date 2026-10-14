@@ -1761,10 +1761,21 @@ keybindButton.Activated:Connect(function()
 end)
 
 -- Toggle Menu Show / Unshow Animation
+local isMobileDevice = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+local mobileToggleButton = nil
+
 local function setMenuVisible(visible, instant)
 	if isMenuAnimating and not instant then return end
 	isMenuOpen = visible
 	objects[1]:SetAttribute("IsMenuOpen", visible)
+
+	if mobileToggleButton and isMobileDevice then
+		if visible then
+			mobileToggleButton.Visible = false
+		else
+			mobileToggleButton.Visible = true
+		end
+	end
 
 	local targetPos = visible and UDim2.new(0, 20, 0.5, 0) or UDim2.new(0, -340, 0.5, 0)
 	local shadowPos = visible and UDim2.new(0, 24, 0.5, 4) or UDim2.new(0, -340, 0.5, 4)
@@ -1786,6 +1797,80 @@ local function setMenuVisible(visible, instant)
 
 	tFrame.Completed:Connect(function()
 		isMenuAnimating = false
+	end)
+end
+
+if isMobileDevice then
+	mobileToggleButton = Instance.new("ImageButton")
+	mobileToggleButton.Name = "MobileMenuToggleCircle"
+	mobileToggleButton.Size = UDim2.new(0, 52, 0, 52)
+	mobileToggleButton.AnchorPoint = Vector2.new(1, 1)
+	mobileToggleButton.Position = UDim2.new(1, -25, 1, -25)
+	mobileToggleButton.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
+	mobileToggleButton.BackgroundTransparency = 0.1
+	mobileToggleButton.BorderSizePixel = 0
+	mobileToggleButton.ZIndex = 120
+	mobileToggleButton.Active = true
+	mobileToggleButton.AutoButtonColor = false
+	mobileToggleButton.Visible = false
+	mobileToggleButton.Parent = objects[1]
+
+	local mobileCorner = Instance.new("UICorner")
+	mobileCorner.CornerRadius = UDim.new(1, 0)
+	mobileCorner.Parent = mobileToggleButton
+
+	local mobileStroke = Instance.new("UIStroke")
+	mobileStroke.Color = Color3.fromRGB(56, 189, 248)
+	mobileStroke.Thickness = 2
+	mobileStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	mobileStroke.Parent = mobileToggleButton
+
+	local mobileIcon = Instance.new("TextLabel")
+	mobileIcon.Name = "Icon"
+	mobileIcon.Size = UDim2.new(1, 0, 1, 0)
+	mobileIcon.BackgroundTransparency = 1
+	mobileIcon.Text = "☰"
+	mobileIcon.TextColor3 = Color3.fromRGB(56, 189, 248)
+	mobileIcon.Font = Enum.Font.GothamBold
+	mobileIcon.TextSize = 24
+	mobileIcon.ZIndex = 121
+	mobileIcon.Parent = mobileToggleButton
+
+	local mobileScale = Instance.new("UIScale")
+	mobileScale.Scale = 1
+	mobileScale.Parent = mobileToggleButton
+
+	local isDragging = false
+	local dragStart, startPos
+	mobileToggleButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+			isDragging = true
+			dragStart = input.Position
+			startPos = mobileToggleButton.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					isDragging = false
+				end
+			end)
+		end
+	end)
+	mobileToggleButton.InputChanged:Connect(function(input)
+		if isDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+			local delta = input.Position - dragStart
+			mobileToggleButton.Position = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+
+	mobileToggleButton.Activated:Connect(function()
+		TweenService:Create(mobileScale, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 0.85}):Play()
+		task.wait(0.1)
+		TweenService:Create(mobileScale, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = 1}):Play()
+		setMenuVisible(true)
 	end)
 end
 
