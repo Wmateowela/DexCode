@@ -383,7 +383,7 @@ buyButtonSizeConstraint.Parent = objects[22]
 -- Buy Button Reveal Layer
 local revealContainer = Instance.new("CanvasGroup")
 revealContainer.Name = "RevealContainer"
-revealContainer.Size = UDim2.new(1, 0, 1, 0)
+revealContainer.Size = UDim2.new(1, 0, 1, 4)
 revealContainer.Position = UDim2.new(0, 0, 0, 0)
 revealContainer.BackgroundTransparency = 1
 revealContainer.BorderSizePixel = 0
@@ -397,7 +397,7 @@ containerCorner.Parent = revealContainer
 
 local revealOverlay = Instance.new("Frame")
 revealOverlay.Name = "RevealOverlay"
-revealOverlay.Size = UDim2.new(1, 0, 1, 0)
+revealOverlay.Size = UDim2.new(1, 0, 1, 4)
 revealOverlay.Position = UDim2.new(0, 0, 0, 0)
 revealOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 revealOverlay.BackgroundTransparency = 0.45
@@ -610,6 +610,7 @@ local okButton = Instance.new("TextButton")
 okButton.Name = "OkButton"
 okButton.AutoButtonColor = false
 okButton.Selectable = false
+okButton.ClipsDescendants = true
 okButton.Size = UDim2.new(0, 410, 0, 42)
 okButton.Position = UDim2.new(0, 20, 0, 186)
 okButton.ZIndex = 5
@@ -632,6 +633,33 @@ okButtonSizeConstraint.Name = "OkButtonSizeConstraint"
 okButtonSizeConstraint.MinSize = Vector2.new(410, 42)
 okButtonSizeConstraint.MaxSize = Vector2.new(410, 42)
 okButtonSizeConstraint.Parent = okButton
+
+-- OK Button Reveal Layer (matches BuyButton dark layer, ensures no bottom blue gap on phone screens)
+local okRevealContainer = Instance.new("CanvasGroup")
+okRevealContainer.Name = "OkRevealContainer"
+okRevealContainer.Size = UDim2.new(1, 0, 1, 4)
+okRevealContainer.Position = UDim2.new(0, 0, 0, 0)
+okRevealContainer.BackgroundTransparency = 1
+okRevealContainer.BorderSizePixel = 0
+okRevealContainer.ZIndex = 7
+okRevealContainer.Active = false
+okRevealContainer.Visible = false
+okRevealContainer.Parent = okButton
+
+local okContainerCorner = Instance.new("UICorner")
+okContainerCorner.CornerRadius = okCorner.CornerRadius
+okContainerCorner.Parent = okRevealContainer
+
+local okRevealOverlay = Instance.new("Frame")
+okRevealOverlay.Name = "OkRevealOverlay"
+okRevealOverlay.Size = UDim2.new(1, 0, 1, 4)
+okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+okRevealOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+okRevealOverlay.BackgroundTransparency = 0.45
+okRevealOverlay.BorderSizePixel = 0
+okRevealOverlay.ZIndex = 8
+okRevealOverlay.Active = false
+okRevealOverlay.Parent = okRevealContainer
 
 okButton.ChildAdded:Connect(function(child)
 	if child:IsA("UIScale") then
@@ -806,6 +834,47 @@ local function playReveal()
 	end)
 end
 
+local isOkRevealRunning = false
+local currentOkRevealTween = nil
+
+local function playOkReveal()
+	if currentOkRevealTween then
+		currentOkRevealTween:Cancel()
+	end
+	isOkRevealRunning = true
+	if okRevealContainer and okRevealOverlay then
+		okRevealContainer.Visible = true
+		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+		local tween = TweenService:Create(
+			okRevealOverlay,
+			TweenInfo.new(2.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{Position = UDim2.new(1, 0, 0, 0)}
+		)
+		currentOkRevealTween = tween
+		tween:Play()
+		tween.Completed:Connect(function(playbackState)
+			if playbackState == Enum.PlaybackState.Completed then
+				okRevealContainer.Visible = false
+				currentOkRevealTween = nil
+				isOkRevealRunning = false
+			end
+		end)
+	end
+end
+
+local function getModalResponsiveScale()
+	local camera = workspace.CurrentCamera
+	if not camera then return 1.0 end
+	local vp = camera.ViewportSize
+	if vp.X <= 0 or vp.Y <= 0 then return 1.0 end
+
+	local maxH = vp.Y - 16
+	local maxW = vp.X - 20
+	local scaleH = maxH / 286
+	local scaleW = maxW / 450
+	return math.clamp(math.min(scaleH, scaleW, 1.0), 0.6, 1.0)
+end
+
 local function openModal()
 	if isModalBusy or isModalOpen then return end
 	isModalBusy = true
@@ -821,10 +890,11 @@ local function openModal()
 	objects[2].BackgroundTransparency = 1
 	objects[3].Position = UDim2.new(0.5, 0, 0.491261, 52)
 	objects[3].BackgroundTransparency = 0.7
-	objects[5].Scale = 1.0
+	local mScale = getModalResponsiveScale()
+	objects[5].Scale = mScale
 	objects[6].Position = UDim2.new(0.5, 0, 0.5, 45)
 	objects[6].GroupTransparency = 0.4
-	objects[9].Scale = 1.0
+	objects[9].Scale = mScale
 	revealContainer.Visible = true
 	revealOverlay.Position = UDim2.new(0, 0, 0, 0)
 
@@ -872,6 +942,12 @@ local function closeModal(isNormalClose)
 	end
 	isRevealRunning = false
 
+	if currentOkRevealTween then
+		currentOkRevealTween:Cancel()
+		currentOkRevealTween = nil
+	end
+	isOkRevealRunning = false
+
 	if isNormalClose then
 		local normalFadeInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 		local tFadeModal = TweenService:Create(objects[6], normalFadeInfo, {GroupTransparency = 1})
@@ -904,6 +980,12 @@ local function closeModal(isNormalClose)
 
 	revealOverlay.Position = UDim2.new(0, 0, 0, 0)
 	revealContainer.Visible = false
+	if okRevealOverlay then
+		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+	end
+	if okRevealContainer then
+		okRevealContainer.Visible = false
+	end
 	objects[22].BackgroundColor3 = Color3.fromRGB(57, 105, 252)
 	objects[6].Position = UDim2.new(0.5, 0, 0.5, 45)
 	objects[3].Position = UDim2.new(0.5, 0, 0.491261, 52)
@@ -1017,6 +1099,54 @@ menuStroke.Thickness = 1.2
 menuStroke.Transparency = 0.2
 menuStroke.Parent = menuFrame
 
+local menuScale = Instance.new("UIScale")
+menuScale.Name = "MenuScale"
+menuScale.Scale = 1.0
+menuScale.Parent = menuFrame
+
+local shadowScale = Instance.new("UIScale")
+shadowScale.Name = "ShadowScale"
+shadowScale.Scale = 1.0
+shadowScale.Parent = menuShadow
+
+local function updateMenuResponsiveScale()
+	local camera = workspace.CurrentCamera
+	if not camera then return end
+	local vp = camera.ViewportSize
+	if vp.X <= 0 or vp.Y <= 0 then return end
+
+	-- Determine target scale based on available screen bounds
+	-- Standard menu size is 310 x 480
+	-- Leaves comfortable 12px margin on top & bottom on mobile screens
+	local maxH = math.max(120, vp.Y - 24)
+	local maxW = math.max(120, vp.X - 30)
+
+	local scaleH = maxH / 480
+	local scaleW = maxW / 310
+	local targetScale = math.clamp(math.min(scaleH, scaleW, 1.0), 0.5, 1.0)
+
+	menuScale.Scale = targetScale
+	shadowScale.Scale = targetScale
+
+	if isMenuOpen and not isMenuAnimating then
+		menuShadow.Position = UDim2.new(0, 20 + math.round(4 * targetScale), 0.5, math.round(4 * targetScale))
+	end
+end
+
+updateMenuResponsiveScale()
+
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+	local newCam = workspace.CurrentCamera
+	if newCam then
+		updateMenuResponsiveScale()
+		newCam:GetPropertyChangedSignal("ViewportSize"):Connect(updateMenuResponsiveScale)
+	end
+end)
+
+if workspace.CurrentCamera then
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateMenuResponsiveScale)
+end
+
 -- Header
 local headerFrame = Instance.new("Frame")
 headerFrame.Name = "Header"
@@ -1116,6 +1246,8 @@ contentFrame.BackgroundTransparency = 1
 contentFrame.BorderSizePixel = 0
 contentFrame.ScrollBarThickness = 3
 contentFrame.ScrollBarImageColor3 = Color3.fromRGB(60, 68, 88)
+contentFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+contentFrame.ElasticBehavior = Enum.ElasticBehavior.Always
 contentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 contentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 contentFrame.ZIndex = 51
@@ -1777,8 +1909,9 @@ local function setMenuVisible(visible, instant)
 		end
 	end
 
+	local curScale = menuScale and menuScale.Scale or 1.0
 	local targetPos = visible and UDim2.new(0, 20, 0.5, 0) or UDim2.new(0, -340, 0.5, 0)
-	local shadowPos = visible and UDim2.new(0, 24, 0.5, 4) or UDim2.new(0, -340, 0.5, 4)
+	local shadowPos = visible and UDim2.new(0, 20 + math.round(4 * curScale), 0.5, math.round(4 * curScale)) or UDim2.new(0, -340, 0.5, 4)
 
 	if instant then
 		menuFrame.Position = targetPos
@@ -1951,10 +2084,16 @@ local function openPurchaseCompletedModal()
 	objects[2].BackgroundTransparency = 1
 	objects[3].Position = UDim2.new(0.5, 0, 0.491261, 52)
 	objects[3].BackgroundTransparency = 0.7
-	objects[5].Scale = 1.0
+	local mScale = getModalResponsiveScale()
+	objects[5].Scale = mScale
 	objects[6].Position = UDim2.new(0.5, 0, 0.5, 45)
 	objects[6].GroupTransparency = 0.4
-	objects[9].Scale = 1.0
+	objects[9].Scale = mScale
+
+	if okRevealContainer and okRevealOverlay then
+		okRevealContainer.Visible = true
+		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+	end
 
 	local moveInfo = TweenInfo.new(0.32, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
 	local fadeInfo = TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -1971,6 +2110,12 @@ local function openPurchaseCompletedModal()
 	tFadeModal:Play()
 	tFadeShadow:Play()
 	tFadeOverlay:Play()
+
+	task.delay(0.08, function()
+		if isModalOpen or isModalBusy then
+			playOkReveal()
+		end
+	end)
 
 	tPosModal.Completed:Wait()
 
@@ -2036,6 +2181,10 @@ end)
 -- OK Button on Purchase Completed View (No hover effect, static blue color)
 okButton.Activated:Connect(function()
 	if isModalBusy or not isModalOpen then return end
+	if okRevealContainer and okRevealOverlay then
+		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+		okRevealContainer.Visible = true
+	end
 	closeModal(true)
 end)
 
