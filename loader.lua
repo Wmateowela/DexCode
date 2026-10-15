@@ -2124,11 +2124,9 @@ local function openPurchaseCompletedModal()
 	objects[9].Scale = mScale
 
 	if okRevealOverlay then
-		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
-		okRevealOverlay.Visible = true
+		okRevealOverlay.Visible = false
 		if okRevealGradient then
-			okRevealGradient.Enabled = true
-			okRevealGradient.Offset = Vector2.new(-0.5, 0)
+			okRevealGradient.Enabled = false
 		end
 	end
 
@@ -2147,12 +2145,6 @@ local function openPurchaseCompletedModal()
 	tFadeModal:Play()
 	tFadeShadow:Play()
 	tFadeOverlay:Play()
-
-	task.delay(0.08, function()
-		if isModalOpen or isModalBusy then
-			playOkReveal()
-		end
-	end)
 
 	tPosModal.Completed:Wait()
 
