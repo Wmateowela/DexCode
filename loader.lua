@@ -353,7 +353,7 @@ objects[22] = Instance.new("TextButton")
 objects[22].Name = "BuyButton"
 objects[22].AutoButtonColor = false
 objects[22].Selectable = false
-objects[22].ClipsDescendants = true
+objects[22].ClipsDescendants = false
 objects[22].Size = UDim2.new(0, 410, 0, 40)
 objects[22].Position = UDim2.new(0, 20, 0, 165)
 objects[22].ZIndex = 5
@@ -380,31 +380,37 @@ buyButtonSizeConstraint.MinSize = Vector2.new(410, 40)
 buyButtonSizeConstraint.MaxSize = Vector2.new(410, 40)
 buyButtonSizeConstraint.Parent = objects[22]
 
--- Buy Button Reveal Layer
-local revealContainer = Instance.new("CanvasGroup")
-revealContainer.Name = "RevealContainer"
-revealContainer.Size = UDim2.new(1, 0, 1, 4)
-revealContainer.Position = UDim2.new(0, 0, 0, 0)
-revealContainer.BackgroundTransparency = 1
-revealContainer.BorderSizePixel = 0
-revealContainer.ZIndex = 7
-revealContainer.Active = false
-revealContainer.Parent = objects[22]
-
-local containerCorner = Instance.new("UICorner")
-containerCorner.CornerRadius = objects[23].CornerRadius
-containerCorner.Parent = revealContainer
-
+-- Buy Button Dark Overlay (Parented directly to BuyButton with matching UICorner)
 local revealOverlay = Instance.new("Frame")
 revealOverlay.Name = "RevealOverlay"
-revealOverlay.Size = UDim2.new(1, 0, 1, 4)
+revealOverlay.Size = UDim2.new(1, 0, 1, 0)
 revealOverlay.Position = UDim2.new(0, 0, 0, 0)
 revealOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-revealOverlay.BackgroundTransparency = 0.45
+revealOverlay.BackgroundTransparency = 0.55
 revealOverlay.BorderSizePixel = 0
 revealOverlay.ZIndex = 8
 revealOverlay.Active = false
-revealOverlay.Parent = revealContainer
+revealOverlay.Visible = false
+revealOverlay.Parent = objects[22]
+
+local revealCorner = Instance.new("UICorner")
+revealCorner.Name = "RevealCorner"
+revealCorner.CornerRadius = objects[23].CornerRadius
+revealCorner.Parent = revealOverlay
+
+local revealGradient = Instance.new("UIGradient")
+revealGradient.Name = "RevealGradient"
+revealGradient.Transparency = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 1),
+	NumberSequenceKeypoint.new(0.499, 1),
+	NumberSequenceKeypoint.new(0.501, 0),
+	NumberSequenceKeypoint.new(1, 0),
+})
+revealGradient.Offset = Vector2.new(0.5, 0)
+revealGradient.Enabled = false
+revealGradient.Parent = revealOverlay
+
+local revealContainer = revealOverlay
 
 -- [[24: Frame "MembershipBanner"]]
 objects[24] = Instance.new("Frame")
@@ -610,7 +616,7 @@ local okButton = Instance.new("TextButton")
 okButton.Name = "OkButton"
 okButton.AutoButtonColor = false
 okButton.Selectable = false
-okButton.ClipsDescendants = true
+okButton.ClipsDescendants = false
 okButton.Size = UDim2.new(0, 410, 0, 42)
 okButton.Position = UDim2.new(0, 20, 0, 186)
 okButton.ZIndex = 5
@@ -634,32 +640,37 @@ okButtonSizeConstraint.MinSize = Vector2.new(410, 42)
 okButtonSizeConstraint.MaxSize = Vector2.new(410, 42)
 okButtonSizeConstraint.Parent = okButton
 
--- OK Button Reveal Layer (matches BuyButton dark layer, ensures no bottom blue gap on phone screens)
-local okRevealContainer = Instance.new("CanvasGroup")
-okRevealContainer.Name = "OkRevealContainer"
-okRevealContainer.Size = UDim2.new(1, 0, 1, 4)
-okRevealContainer.Position = UDim2.new(0, 0, 0, 0)
-okRevealContainer.BackgroundTransparency = 1
-okRevealContainer.BorderSizePixel = 0
-okRevealContainer.ZIndex = 7
-okRevealContainer.Active = false
-okRevealContainer.Visible = false
-okRevealContainer.Parent = okButton
-
-local okContainerCorner = Instance.new("UICorner")
-okContainerCorner.CornerRadius = okCorner.CornerRadius
-okContainerCorner.Parent = okRevealContainer
-
+-- OK Button Dark Overlay (Parented directly to OkButton with matching UICorner)
 local okRevealOverlay = Instance.new("Frame")
 okRevealOverlay.Name = "OkRevealOverlay"
-okRevealOverlay.Size = UDim2.new(1, 0, 1, 4)
+okRevealOverlay.Size = UDim2.new(1, 0, 1, 0)
 okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
 okRevealOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-okRevealOverlay.BackgroundTransparency = 0.45
+okRevealOverlay.BackgroundTransparency = 0.55
 okRevealOverlay.BorderSizePixel = 0
 okRevealOverlay.ZIndex = 8
 okRevealOverlay.Active = false
-okRevealOverlay.Parent = okRevealContainer
+okRevealOverlay.Visible = false
+okRevealOverlay.Parent = okButton
+
+local okRevealCorner = Instance.new("UICorner")
+okRevealCorner.Name = "OkRevealCorner"
+okRevealCorner.CornerRadius = okCorner.CornerRadius
+okRevealCorner.Parent = okRevealOverlay
+
+local okRevealGradient = Instance.new("UIGradient")
+okRevealGradient.Name = "OkRevealGradient"
+okRevealGradient.Transparency = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 1),
+	NumberSequenceKeypoint.new(0.499, 1),
+	NumberSequenceKeypoint.new(0.501, 0),
+	NumberSequenceKeypoint.new(1, 0),
+})
+okRevealGradient.Offset = Vector2.new(0.5, 0)
+okRevealGradient.Enabled = false
+okRevealGradient.Parent = okRevealOverlay
+
+local okRevealContainer = okRevealOverlay
 
 okButton.ChildAdded:Connect(function(child)
 	if child:IsA("UIScale") then
@@ -816,18 +827,21 @@ local function playReveal()
 		currentRevealTween:Cancel()
 	end
 	isRevealRunning = true
-	revealContainer.Visible = true
 	revealOverlay.Position = UDim2.new(0, 0, 0, 0)
+	revealOverlay.Visible = true
+	revealGradient.Enabled = true
+	revealGradient.Offset = Vector2.new(-0.5, 0)
 	local tween = TweenService:Create(
-		revealOverlay,
+		revealGradient,
 		TweenInfo.new(2.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-		{Position = UDim2.new(1, 0, 0, 0)}
+		{Offset = Vector2.new(0.5, 0)}
 	)
 	currentRevealTween = tween
 	tween:Play()
 	tween.Completed:Connect(function(playbackState)
 		if playbackState == Enum.PlaybackState.Completed then
-			revealContainer.Visible = false
+			revealOverlay.Visible = false
+			revealGradient.Enabled = false
 			currentRevealTween = nil
 			isRevealRunning = false
 		end
@@ -842,19 +856,22 @@ local function playOkReveal()
 		currentOkRevealTween:Cancel()
 	end
 	isOkRevealRunning = true
-	if okRevealContainer and okRevealOverlay then
-		okRevealContainer.Visible = true
+	if okRevealOverlay then
 		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+		okRevealOverlay.Visible = true
+		okRevealGradient.Enabled = true
+		okRevealGradient.Offset = Vector2.new(-0.5, 0)
 		local tween = TweenService:Create(
-			okRevealOverlay,
+			okRevealGradient,
 			TweenInfo.new(2.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-			{Position = UDim2.new(1, 0, 0, 0)}
+			{Offset = Vector2.new(0.5, 0)}
 		)
 		currentOkRevealTween = tween
 		tween:Play()
 		tween.Completed:Connect(function(playbackState)
 			if playbackState == Enum.PlaybackState.Completed then
-				okRevealContainer.Visible = false
+				okRevealOverlay.Visible = false
+				okRevealGradient.Enabled = false
 				currentOkRevealTween = nil
 				isOkRevealRunning = false
 			end
@@ -895,8 +912,10 @@ local function openModal()
 	objects[6].Position = UDim2.new(0.5, 0, 0.5, 45)
 	objects[6].GroupTransparency = 0.4
 	objects[9].Scale = mScale
-	revealContainer.Visible = true
 	revealOverlay.Position = UDim2.new(0, 0, 0, 0)
+	revealOverlay.Visible = true
+	revealGradient.Enabled = true
+	revealGradient.Offset = Vector2.new(-0.5, 0)
 
 	local moveInfo = TweenInfo.new(0.32, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
 	local fadeInfo = TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -941,12 +960,22 @@ local function closeModal(isNormalClose)
 		currentRevealTween = nil
 	end
 	isRevealRunning = false
+	if revealGradient then
+		revealGradient.Enabled = false
+	end
+	revealOverlay.Visible = false
 
 	if currentOkRevealTween then
 		currentOkRevealTween:Cancel()
 		currentOkRevealTween = nil
 	end
 	isOkRevealRunning = false
+	if okRevealGradient then
+		okRevealGradient.Enabled = false
+	end
+	if okRevealOverlay then
+		okRevealOverlay.Visible = false
+	end
 
 	if isNormalClose then
 		local normalFadeInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -979,12 +1008,16 @@ local function closeModal(isNormalClose)
 	end
 
 	revealOverlay.Position = UDim2.new(0, 0, 0, 0)
-	revealContainer.Visible = false
+	revealOverlay.Visible = false
+	if revealGradient then
+		revealGradient.Enabled = false
+	end
 	if okRevealOverlay then
 		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+		okRevealOverlay.Visible = false
 	end
-	if okRevealContainer then
-		okRevealContainer.Visible = false
+	if okRevealGradient then
+		okRevealGradient.Enabled = false
 	end
 	objects[22].BackgroundColor3 = Color3.fromRGB(57, 105, 252)
 	objects[6].Position = UDim2.new(0.5, 0, 0.5, 45)
@@ -1938,7 +1971,7 @@ if isMobileDevice then
 	mobileToggleButton.Name = "MobileMenuToggleCircle"
 	mobileToggleButton.Size = UDim2.new(0, 52, 0, 52)
 	mobileToggleButton.AnchorPoint = Vector2.new(1, 1)
-	mobileToggleButton.Position = UDim2.new(1, -25, 1, -25)
+	mobileToggleButton.Position = UDim2.new(1, -25, 1, -140)
 	mobileToggleButton.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
 	mobileToggleButton.BackgroundTransparency = 0.1
 	mobileToggleButton.BorderSizePixel = 0
@@ -2090,9 +2123,13 @@ local function openPurchaseCompletedModal()
 	objects[6].GroupTransparency = 0.4
 	objects[9].Scale = mScale
 
-	if okRevealContainer and okRevealOverlay then
-		okRevealContainer.Visible = true
+	if okRevealOverlay then
 		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
+		okRevealOverlay.Visible = true
+		if okRevealGradient then
+			okRevealGradient.Enabled = true
+			okRevealGradient.Offset = Vector2.new(-0.5, 0)
+		end
 	end
 
 	local moveInfo = TweenInfo.new(0.32, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
@@ -2137,8 +2174,11 @@ buyButton.Activated:Connect(function()
 	isPendingBuy = true
 
 	-- 1. Directly apply dark layer over Buy button (no left-to-right movement, stays stationary/darkened)
+	if revealGradient then
+		revealGradient.Enabled = false
+	end
 	revealOverlay.Position = UDim2.new(0, 0, 0, 0)
-	revealContainer.Visible = true
+	revealOverlay.Visible = true
 
 	-- 2. Wait 2 seconds (layer stays stopped/frozen on button)
 	task.wait(2)
@@ -2149,7 +2189,7 @@ buyButton.Activated:Connect(function()
 	objects[3].BackgroundTransparency = 1
 	objects[2].BackgroundTransparency = 1
 	isModalOpen = false
-	revealContainer.Visible = false
+	revealOverlay.Visible = false
 	revealOverlay.Position = UDim2.new(0, 0, 0, 0)
 
 	-- 4. Open "Purchase completed" modal with the same entrance animation
@@ -2181,9 +2221,12 @@ end)
 -- OK Button on Purchase Completed View (No hover effect, static blue color)
 okButton.Activated:Connect(function()
 	if isModalBusy or not isModalOpen then return end
-	if okRevealContainer and okRevealOverlay then
+	if okRevealOverlay then
+		if okRevealGradient then
+			okRevealGradient.Enabled = false
+		end
 		okRevealOverlay.Position = UDim2.new(0, 0, 0, 0)
-		okRevealContainer.Visible = true
+		okRevealOverlay.Visible = true
 	end
 	closeModal(true)
 end)
