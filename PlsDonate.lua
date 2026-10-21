@@ -1,24 +1,3 @@
---!strict
--- ============================================================================
--- Send Robux Modal Controller with Advanced Settings
--- Features:
---   1. Send Robux Modal layout (476px height) matching UI.lua design.
---   2. Authentic Roblox assets: Roblox tilt logo ("rbxassetid://125746152594286")
---      and Robux coin icons ("rbxassetid://16884178261", rect [190, 152, 36, 36]).
---   3. Sleek Left-side Settings Menu with smooth sliding transitions.
---   4. Persistent Total Amount (auto-saved across script re-runs via file / memory).
---   5. Persistent Start Hidden / Auto-Unshow toggle (auto-saved across script runs).
---   6. Persistent Keybind Selector button (Default: F4, auto-saved across runs).
---   7. Configurable Random Popup Delay (Default: 1.0s to 2.0s, configurable in Settings).
---   8. On Send button click: direct dark layer (stationary on button), 2s wait, instant direct close.
---   9. Animated entrance for "Purchase completed" Modal:
---      - Exact layout matching user's reference mockup
---      - "Purchase completed" header (same font and size)
---      - Checkmark circle icon ("rbxassetid://98579402919536")
---      - "You have successfully sent <Amount> Robux."
---      - Blue "OK" button, hover effect disabled
---      - Robux deduction happens on OK/Close completion
--- ============================================================================
 
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
